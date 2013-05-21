@@ -1,5 +1,6 @@
 Worker
-====
+=====
+[![Build Status](https://drone.io/github.com/Dreckr/Worker/status.png)](https://drone.io/github.com/Dreckr/Worker/latest)
 
 An easy to use utility to perform tasks concurrently.
 
