@@ -1,3 +1,5 @@
+library worker_src;
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:isolate';
@@ -25,19 +27,35 @@ void _workerMain () {
   });
 }
 
+/**
+ * A concurrent [Task] executor.
+ * 
+ * A [Worker] creates and manages a pool of isolates providing you with an easy 
+ * way to perform blocking tasks concurrently. It spawns isolates lazilly as [Task]s
+ * are required to execute.
+ */
 class Worker {
+  // TODO Provide a way to close isolates
+  // TODO Tasks don't have to actually wait for a free isolate. They can run side-by-side with other tasks.
 
+  /// Size of the pool of isolates.
   int poolSize;
+  
+  /// Spawned isolates that free to handle more tasks.
   Queue<SendPort> availableSendPorts = new Queue<SendPort>();
+  
+  /// Isolates that are currently performing a task.
   Set<SendPort> workingSendPorts = new Set<SendPort>();
-  Queue<WaitingTask> waitingTasks = new Queue<WaitingTask>();
-  bool _closed = false;
+  
+  /// Tasks that are waiting for a free isolate.
+  Queue<_WaitingTask> _waitingTasks = new Queue<_WaitingTask>();
 
   Worker ({this.poolSize : 1}) {
     if (this.poolSize <= 0)
       this.poolSize = 1;
   }
 
+  /// Returns a [Future] with the result of the execution of the [Task].
   Future execute (Task task) {
     Completer completer = new Completer();
     SendPort sendPort = _getAvailableSendPort();
@@ -60,10 +78,10 @@ class Worker {
     taskResult.whenComplete(() {
       workingSendPorts.remove(sendPort);
 
-      if (waitingTasks.length == 0) {
+      if (_waitingTasks.length == 0) {
         availableSendPorts.add(sendPort);
       } else {
-        WaitingTask waitingTask = waitingTasks.removeFirst();
+        _WaitingTask waitingTask = _waitingTasks.removeFirst();
         this._runTask(sendPort, waitingTask.task, waitingTask.completer);
       }
     });
@@ -81,18 +99,24 @@ class Worker {
   }
 
   void _queueTask (Task task, Completer completer) {
-    waitingTasks.add(new WaitingTask(task, completer));
+    _waitingTasks.add(new _WaitingTask(task, completer));
   }
 
 }
 
-class WaitingTask {
+class _WaitingTask {
   Task task;
   Completer completer;
 
-  WaitingTask (this.task, this.completer);
+  _WaitingTask (this.task, this.completer);
 }
 
+
+/**
+ * A task that needs to be executed.
+ * 
+ * This class provides an interface for tasks.
+ */
 abstract class Task<T> {
 
   T execute ();
