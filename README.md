@@ -50,5 +50,5 @@ Worker worker = new Worker(poolSize: 4);
 Tips
 ----
 * A Task may return a Future. The Worker will wait until this Future is completed and will return its result.
-* If you have perform many iterations of an operation, you can batch it into tasks and run them concurrently.
-* Running tasks in other isolates involves in copying the task object to the other isolate. Keep your task thin.
+* If you have to perform many iterations of an operation, you can batch it into tasks and run them concurrently.
+* Running tasks in other isolates involves copying the task object to the other isolate. Keep your task thin.

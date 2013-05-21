@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:worker/worker.dart';
 import 'package:unittest/unittest.dart';
+import 'package:unittest/vm_config.dart';
 
 void main () {
+  useVMConfiguration();
+  
   group('Worker construction', () {
     Worker worker;
     
