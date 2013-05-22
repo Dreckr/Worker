@@ -23,7 +23,7 @@ void _workerMain () {
         sendPort.send(result);
       }
     } else
-      sendPort.call(new _WorkerSignal(new Exception('Message is not a task')));
+      sendPort.call(new _WorkerError(new Exception('Message is not a task')));
   });
 }
 

@@ -85,7 +85,6 @@ void main () {
     test('of sync task with exception', () {
       task = new AsyncAddTask(1, 2, throwException: true);
       
-    
       worker.handle(task).then((result) {
       },
       onError: expectAsync1((error) {
