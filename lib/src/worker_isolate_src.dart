@@ -5,7 +5,7 @@ void _workerMain () {
   port.receive((message, SendPort sendPort) {
     if (!_acceptMessage(message))
         return;
-    
+
     if (message is Task)  {
       var result;
 
@@ -32,6 +32,6 @@ bool _acceptMessage (message) {
     port.close();
     return false;
   }
-  
+
   return true;
 }
