@@ -108,7 +108,7 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   }
 
   void close () {
-    sendPort.call(const _WorkerSignal(1));
+    sendPort.call(CLOSE_SIGNAL);
   }
 
 }
@@ -118,8 +118,10 @@ class _WorkerIsolateImpl implements WorkerIsolate {
  * Signals:
  *  1 - CloseIsolate
  */
+const CLOSE_SIGNAL = const _WorkerSignal(1);
 class _WorkerSignal {
   final int id;
+  final List list = [];
 
   const _WorkerSignal (this.id);
 

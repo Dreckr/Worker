@@ -1,6 +1,5 @@
 part of worker_src;
 
-
 void _workerMain () {
   port.receive((message, SendPort sendPort) {
     if (!_acceptMessage(message))
@@ -28,7 +27,7 @@ void _workerMain () {
 }
 
 bool _acceptMessage (message) {
-  if (message == const _WorkerSignal(1)) {
+  if (message is _WorkerSignal && message.id == CLOSE_SIGNAL.id) {
     port.close();
     return false;
   }
