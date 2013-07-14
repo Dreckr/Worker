@@ -121,7 +121,6 @@ class _WorkerIsolateImpl implements WorkerIsolate {
 const CLOSE_SIGNAL = const _WorkerSignal(1);
 class _WorkerSignal {
   final int id;
-  final List list = [];
 
   const _WorkerSignal (this.id);
 
