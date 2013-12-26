@@ -1,5 +1,79 @@
 part of worker_src;
 
+ReceivePort nativeReceivePort;
+SendPort nativeSendPort;
+bool flag = false;
+Map<int, IsolatedReceivePort> isolatedReceivePorts = new Map();
+
+void prepareReceivePort () {
+  nativeReceivePort = new ReceivePort();
+  nativeSendPort = nativeReceivePort.sendPort;
+  nativeReceivePort.listen(
+      (data) {
+        if (data is IsolatedMessage &&
+            isolatedReceivePorts.containsKey(data.id)) {
+          isolatedReceivePorts[data.id]._controller.add(data.message);
+        }
+      });
+  flag = true;
+}
+
+class IsolatedReceivePort extends Stream implements ReceivePort {
+  static int nextId = 1;
+  int id;
+  IsolatedSendPort _sendPort;
+  SendPort get sendPort => _sendPort;
+  StreamController _controller = new StreamController();
+  StreamSubscription _subscription;
+  
+  IsolatedReceivePort () {
+    if (!flag) {
+      prepareReceivePort();
+    }
+    
+    this.id = nextId;
+    nextId++;
+    
+    _sendPort = new IsolatedSendPort(id);
+    
+    isolatedReceivePorts[id] = this;
+  }
+  
+  StreamSubscription listen(void onData(value),
+                            { void onError(error),
+    void onDone(),
+    bool cancelOnError }) {
+    
+    return this._controller.stream.listen(
+          onData, 
+          onError: onError, 
+          onDone: onDone,
+          cancelOnError: cancelOnError);
+  }
+  
+  void close() {
+    _subscription.cancel();
+  }
+}
+
+class IsolatedSendPort implements SendPort {
+  int id;
+  SendPort _sendPort;
+
+  IsolatedSendPort(int this.id) : _sendPort = nativeSendPort;
+  
+  void send (message) {
+    _sendPort.send(new IsolatedMessage(id, message));
+  }
+}
+
+class IsolatedMessage {
+  int id;
+  var message;
+  
+  IsolatedMessage (this.id, this.message);
+}
+
 class _WorkerImpl implements Worker {
   bool _isClosed = false;
 
@@ -9,9 +83,11 @@ class _WorkerImpl implements Worker {
 
   final Queue<WorkerIsolate> isolates = new Queue<WorkerIsolate>();
 
-  Iterable<WorkerIsolate> get availableIsolates => this.isolates.where((isolate) => isolate.isFree);
+  Iterable<WorkerIsolate> get availableIsolates => 
+      this.isolates.where((isolate) => isolate.isFree);
 
-  Iterable<WorkerIsolate> get workingIsolates => this.isolates.where((isolate) => !isolate.isFree);
+  Iterable<WorkerIsolate> get workingIsolates => 
+      this.isolates.where((isolate) => !isolate.isFree);
 
   _WorkerImpl ({this.poolSize : 1, spawnLazily : true}) {
     if (this.poolSize <= 0)
@@ -45,13 +121,9 @@ class _WorkerImpl implements Worker {
               this.isolates.add(isolate );
 
             } else {
-              isolate = this.isolates.fold(this.isolates.first,
-                  (curr, islt) {
-                    if (curr.runningTasks.length < islt.runningTasks.length)
-                      return islt;
-                    else
-                      return curr;
-                  });
+              isolate = this.isolates.firstWhere(
+                  (isolate) => isolate.isFree,
+                  orElse: () => this.isolates.single);
             }
 
             return isolate;
@@ -70,47 +142,83 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   bool _isClosed = false;
 
   bool get isClosed => this._isClosed;
+  
+  ReceivePort _receivePort;
 
-  SendPort sendPort;
+  SendPort _sendPort;
+  
+  Queue<_ScheduledTask> _scheduledTasks = new Queue<_ScheduledTask>();
 
-  Set<Task> runningTasks = new Set<Task>();
-
-  bool get isFree => runningTasks.isEmpty;
+  _ScheduledTask _runningScheduledTask;
+  
+  bool get isFree => _scheduledTasks.isEmpty && _runningScheduledTask == null;
 
   _WorkerIsolateImpl () {
-    this.sendPort = spawnFunction(_workerMain);
+    this._receivePort = new IsolatedReceivePort();
+    Isolate.spawn(_workerMain, this._receivePort.sendPort).then(
+        (isolate) {
+        }, onError: (error) {
+          print(error);
+        });
+    
+    this._receivePort.listen((message) {
+      if (message is SendPort) {
+        this._sendPort = message;
+        this._runNextTask();
+        return;
+      }
+      
+      if (message is _WorkerError) {
+        this._runningScheduledTask.completer.completeError(message.error);
+      } else if (message != null) {
+        this._runningScheduledTask.completer.complete(message);
+      }
+      
+      this._runNextTask();
+    },
+    onError: (exception) {
+        this._runningScheduledTask.completer.completeError(exception);
+      }
+    );
+    
   }
 
   Future performTask (Task task) {
     if (this.isClosed)
       throw new Exception('Isolate is closed!');
-
+    
     Completer completer = new Completer();
-
-    this.runningTasks.add(task);
-
-    Future taskResult = this.sendPort.call(task);
-    taskResult.then(
-        (result) {
-          if (result is _WorkerError)
-            completer.completeError(result.error);
-          else
-            completer.complete(result);
-        },
-        onError: (exception) => completer.completeError(exception));
-
-    taskResult.whenComplete(
-      () {
-          this.runningTasks.remove(task);
-      });
-
+    _scheduledTasks.add(new _ScheduledTask(task, completer));
+    
+    this._runNextTask();
+    
     return completer.future;
+  }
+  
+  void _runNextTask () {
+    if (_sendPort == null ||
+        _scheduledTasks.length == 0 || 
+        (_runningScheduledTask != null &&
+        !_runningScheduledTask.completer.isCompleted))
+      return;
+    
+    _runningScheduledTask = _scheduledTasks.removeFirst();
+    
+    this._sendPort.send(_runningScheduledTask.task);
+    
   }
 
   void close () {
-    sendPort.call(CLOSE_SIGNAL);
+    _sendPort.send(CLOSE_SIGNAL);
   }
 
+}
+
+class _ScheduledTask {
+  Completer completer;
+  Task task;
+  
+  _ScheduledTask (Task this.task, Completer this.completer);
 }
 
 

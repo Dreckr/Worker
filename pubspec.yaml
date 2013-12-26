@@ -1,13 +1,9 @@
 name: worker
-version: 0.2.2
 author: Diego Rocha <diego.rocha.comp@gmail.com>
-description: Utility for easy concurrency with isolates
+version: 0.3.0
 homepage: https://github.com/Dreckr/Worker
+description: Utility for easy concurrency with isolates
 environment:
-  sdk: '>=0.5.0'
+  sdk: '>=1.0.0'
 dev_dependencies:
   unittest: '>=0.5.0'
-
-#dependencies:
-#  js: any
-#  unittest: any

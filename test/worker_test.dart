@@ -94,8 +94,6 @@ void main () {
 
     });
 
-// TODO Isolate pooling tests
-// TODO Close isolate tests
   });
 }
 
@@ -122,7 +120,7 @@ class AsyncAddTask implements Task {
   Future execute () {
     Completer completer = new Completer();
 
-    runAsync(() {
+    scheduleMicrotask(() {
       if (this.throwException)
         completer.completeError(new Exception('Test Async Exception'));
       else

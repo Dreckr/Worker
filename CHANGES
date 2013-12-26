@@ -11,3 +11,6 @@
 	
 0.2.2
 	Minor bug fix.
+	
+0.3.0
+  Work with new Isolates API.

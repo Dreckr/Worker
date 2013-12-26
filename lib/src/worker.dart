@@ -49,8 +49,6 @@ abstract class Worker {
  */
 abstract class WorkerIsolate {
   bool get isClosed;
-  SendPort sendPort;
-  Set<Task> runningTasks;
   bool get isFree;
   
   factory WorkerIsolate () => new _WorkerIsolateImpl ();
