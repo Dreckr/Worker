@@ -1,4 +1,4 @@
-library worker_src;
+library worker;
 
 import 'dart:async';
 import 'dart:collection';
@@ -50,8 +50,6 @@ abstract class Worker {
 abstract class WorkerIsolate {
   bool get isClosed;
   bool get isFree;
-  
-  factory WorkerIsolate () => new _WorkerIsolateImpl ();
   
   Future performTask (Task task);
   

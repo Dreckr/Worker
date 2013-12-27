@@ -1,42 +1,22 @@
-part of worker_src;
+part of worker;
 
-ReceivePort nativeReceivePort;
-SendPort nativeSendPort;
-bool flag = false;
-Map<int, IsolatedReceivePort> isolatedReceivePorts = new Map();
+Map<int, _IsolatedReceivePort> _isolatedReceivePorts = new Map();
 
-void prepareReceivePort () {
-  nativeReceivePort = new ReceivePort();
-  nativeSendPort = nativeReceivePort.sendPort;
-  nativeReceivePort.listen(
-      (data) {
-        if (data is IsolatedMessage &&
-            isolatedReceivePorts.containsKey(data.id)) {
-          isolatedReceivePorts[data.id]._controller.add(data.message);
-        }
-      });
-  flag = true;
-}
-
-class IsolatedReceivePort extends Stream implements ReceivePort {
+class _IsolatedReceivePort extends Stream implements ReceivePort {
   static int nextId = 1;
   int id;
-  IsolatedSendPort _sendPort;
+  ReceivePort _receivePort;
+  _IsolatedSendPort _sendPort;
   SendPort get sendPort => _sendPort;
   StreamController _controller = new StreamController();
-  StreamSubscription _subscription;
   
-  IsolatedReceivePort () {
-    if (!flag) {
-      prepareReceivePort();
-    }
-    
+  _IsolatedReceivePort(ReceivePort this._receivePort) {
     this.id = nextId;
     nextId++;
     
-    _sendPort = new IsolatedSendPort(id);
+    _sendPort = new _IsolatedSendPort(id, _receivePort.sendPort);
     
-    isolatedReceivePorts[id] = this;
+    _isolatedReceivePorts[id] = this;
   }
   
   StreamSubscription listen(void onData(value),
@@ -52,26 +32,26 @@ class IsolatedReceivePort extends Stream implements ReceivePort {
   }
   
   void close() {
-    _subscription.cancel();
+    _isolatedReceivePorts.remove(id);
   }
 }
 
-class IsolatedSendPort implements SendPort {
+class _IsolatedSendPort implements SendPort {
   int id;
   SendPort _sendPort;
 
-  IsolatedSendPort(int this.id) : _sendPort = nativeSendPort;
+  _IsolatedSendPort(int this.id, SendPort this._sendPort);
   
   void send (message) {
-    _sendPort.send(new IsolatedMessage(id, message));
+    _sendPort.send(new _IsolatedMessage(id, message));
   }
 }
 
-class IsolatedMessage {
+class _IsolatedMessage {
   int id;
   var message;
   
-  IsolatedMessage (this.id, this.message);
+  _IsolatedMessage (this.id, this.message);
 }
 
 class _WorkerImpl implements Worker {
@@ -80,6 +60,8 @@ class _WorkerImpl implements Worker {
   bool get isClosed => this._isClosed;
 
   int poolSize;
+  
+  ReceivePort _receivePort;
 
   final Queue<WorkerIsolate> isolates = new Queue<WorkerIsolate>();
 
@@ -92,10 +74,19 @@ class _WorkerImpl implements Worker {
   _WorkerImpl ({this.poolSize : 1, spawnLazily : true}) {
     if (this.poolSize <= 0)
       this.poolSize = 1;
-
+    
+    _receivePort = new ReceivePort();
+    _receivePort.listen(
+        (data) {
+          if (data is _IsolatedMessage &&
+              _isolatedReceivePorts.containsKey(data.id)) {
+            _isolatedReceivePorts[data.id]._controller.add(data.message);
+          }
+        });
+    
     if (!spawnLazily)
       for (var i = 0; i < this.poolSize; i++)
-        this.isolates.add(new WorkerIsolate());
+        this.isolates.add(new _WorkerIsolateImpl(_receivePort));
   }
 
   Future handle (Task task) {
@@ -117,7 +108,7 @@ class _WorkerImpl implements Worker {
             WorkerIsolate isolate;
 
             if (this.isolates.length < this.poolSize) {
-              isolate = new WorkerIsolate();
+              isolate = new _WorkerIsolateImpl(_receivePort);
               this.isolates.add(isolate );
 
             } else {
@@ -134,6 +125,10 @@ class _WorkerImpl implements Worker {
     this._isClosed = true;
 
     this.isolates.forEach((isolate) => isolate.close());
+    
+    _isolatedReceivePorts.clear();
+    
+    this._receivePort.close();
   }
 
 }
@@ -153,8 +148,8 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   
   bool get isFree => _scheduledTasks.isEmpty && _runningScheduledTask == null;
 
-  _WorkerIsolateImpl () {
-    this._receivePort = new IsolatedReceivePort();
+  _WorkerIsolateImpl (ReceivePort receivePort) {
+    this._receivePort = new _IsolatedReceivePort(receivePort);
     Isolate.spawn(_workerMain, this._receivePort.sendPort).then(
         (isolate) {
         }, onError: (error) {
@@ -209,7 +204,11 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   }
 
   void close () {
-    _sendPort.send(CLOSE_SIGNAL);
+    if (this._sendPort == null) {
+      return;
+    }
+    
+    _sendPort.send(_CLOSE_SIGNAL);
   }
 
 }
@@ -226,7 +225,7 @@ class _ScheduledTask {
  * Signals:
  *  1 - CloseIsolate
  */
-const CLOSE_SIGNAL = const _WorkerSignal(1);
+const _CLOSE_SIGNAL = const _WorkerSignal(1);
 class _WorkerSignal {
   final int id;
 

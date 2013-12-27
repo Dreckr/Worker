@@ -15,6 +15,7 @@ void main () {
       expect(worker.isolates, isEmpty);
       expect(worker.availableIsolates, isEmpty);
       expect(worker.workingIsolates, isEmpty);
+      worker.close();
     });
 
     test('with poolSize parameter constructor', () {
@@ -24,6 +25,7 @@ void main () {
       expect(worker.isolates, isEmpty);
       expect(worker.availableIsolates, isEmpty);
       expect(worker.workingIsolates, isEmpty);
+      worker.close();
     });
 
     test('with spawnLazily parameter constructor', () {
@@ -32,6 +34,7 @@ void main () {
       expect(worker.isolates, hasLength(1));
       expect(worker.availableIsolates, hasLength(1));
       expect(worker.workingIsolates, isEmpty);
+      worker.close();
     });
 
     test('with poolSize and spawnLazily parameters constructor', () {
@@ -41,6 +44,7 @@ void main () {
       expect(worker.isolates, hasLength(poolSize));
       expect(worker.availableIsolates, hasLength(poolSize));
       expect(worker.workingIsolates, isEmpty);
+      worker.close();
     });
   });
 
@@ -50,6 +54,10 @@ void main () {
 
     setUp(() {
       worker = new Worker();
+    });
+    
+    tearDown(() {
+      worker.close();
     });
 
     test('of sync task', () {

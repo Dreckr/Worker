@@ -60,4 +60,4 @@ Tips
 * A Task may return a Future. The Worker will wait until this Future is completed and will return its result.
 * If you have to perform many iterations of an operation, you can batch it into tasks and run them concurrently.
 * Running tasks in other isolates involves copying the task object to the other isolate. Keep your task thin.
-* Always use benchmark to identify if Worker is really helping and if the amount of isolates is ideal.
+* Always use benchmarks to identify if Worker is really helping and if the amount of isolates is ideal.

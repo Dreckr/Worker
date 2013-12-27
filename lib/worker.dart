@@ -1,3 +1,3 @@
-library worker;
+library worker.public;
 
 export 'src/worker.dart';

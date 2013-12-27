@@ -1,19 +1,19 @@
-part of worker_src;
+part of worker;
 
-ReceivePort localPort;
-SendPort mainPort;
+ReceivePort _localPort;
+SendPort _mainPort;
 
 void _workerMain (mainPort) {
-  if (localPort == null) {
-    localPort = new ReceivePort();
+  if (_localPort == null) {
+    _localPort = new ReceivePort();
   }
   
   if (mainPort is SendPort) {
     mainPort = mainPort;
-    mainPort.send(localPort.sendPort);
+    mainPort.send(_localPort.sendPort);
   }
   
-  localPort.listen((message) {
+  _localPort.listen((message) {
     if (!_acceptMessage(message))
         return;
   
@@ -39,8 +39,8 @@ void _workerMain (mainPort) {
 }
 
 bool _acceptMessage (message) {
-  if (message is _WorkerSignal && message.id == CLOSE_SIGNAL.id) {
-    localPort.close();
+  if (message is _WorkerSignal && message.id == _CLOSE_SIGNAL.id) {
+    _localPort.close();
     return false;
   }
 
