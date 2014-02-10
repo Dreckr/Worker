@@ -114,7 +114,7 @@ class _WorkerImpl implements Worker {
             } else {
               isolate = this.isolates.firstWhere(
                   (isolate) => isolate.isFree,
-                  orElse: () => this.isolates.single);
+                  orElse: () => this.isolates.first);
             }
 
             return isolate;
