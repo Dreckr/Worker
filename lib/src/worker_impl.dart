@@ -114,7 +114,10 @@ class _WorkerImpl implements Worker {
             } else {
               isolate = this.isolates.firstWhere(
                   (isolate) => isolate.isFree,
-                  orElse: () => this.isolates.first);
+                  orElse: () => this.isolates.reduce(
+                      (a, b) => 
+                          a.scheduledTasks.length >= b.scheduledTasks.length ?
+                              a : b));
             }
 
             return isolate;
@@ -145,6 +148,12 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   Queue<_ScheduledTask> _scheduledTasks = new Queue<_ScheduledTask>();
 
   _ScheduledTask _runningScheduledTask;
+  
+  Task get runningTask => _runningScheduledTask != null ? 
+                            _runningScheduledTask.task : null;
+  
+  List<Task> get scheduledTasks =>
+      _scheduledTasks.map((scheduledTask) => scheduledTask.task);
   
   bool get isFree => _scheduledTasks.isEmpty && _runningScheduledTask == null;
 

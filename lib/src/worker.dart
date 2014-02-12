@@ -2,6 +2,7 @@ library worker;
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:isolate';
 
 part 'worker_impl.dart';
@@ -30,8 +31,13 @@ abstract class Worker {
   /// Isolates that are currently performing a task.
   Iterable<WorkerIsolate> get workingIsolates;
   
-  factory Worker ({poolSize : 1, spawnLazily : true}) => 
-      new _WorkerImpl(poolSize: poolSize, spawnLazily: spawnLazily);
+  factory Worker ({poolSize, spawnLazily : true}) {
+    if (poolSize  == null) {
+      poolSize = Platform.numberOfProcessors;
+    }
+    
+    return new _WorkerImpl(poolSize: poolSize, spawnLazily: spawnLazily);
+  }
 
   /// Returns a [Future] with the result of the execution of the [Task].
   Future handle (Task task);
@@ -50,6 +56,8 @@ abstract class Worker {
 abstract class WorkerIsolate {
   bool get isClosed;
   bool get isFree;
+  Task get runningTask;
+  List<Task> get scheduledTasks;
   
   Future performTask (Task task);
   

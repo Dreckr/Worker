@@ -1,17 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:worker/worker.dart';
 import 'package:unittest/unittest.dart';
 import 'package:unittest/vm_config.dart';
 
 void main () {
   useVMConfiguration();
+  var numberOfProcessors = Platform.numberOfProcessors;
 
   group('Worker construction', () {
     Worker worker;
 
     test('with empty constructor', () {
       worker = new Worker();
-      expect(worker.poolSize, equals(1));
+      expect(worker.poolSize, equals(numberOfProcessors));
       expect(worker.isolates, isEmpty);
       expect(worker.availableIsolates, isEmpty);
       expect(worker.workingIsolates, isEmpty);
@@ -30,9 +32,9 @@ void main () {
 
     test('with spawnLazily parameter constructor', () {
       worker = new Worker(spawnLazily: false);
-      expect(worker.poolSize, equals(1));
-      expect(worker.isolates, hasLength(1));
-      expect(worker.availableIsolates, hasLength(1));
+      expect(worker.poolSize, equals(numberOfProcessors));
+      expect(worker.isolates, hasLength(numberOfProcessors));
+      expect(worker.availableIsolates, hasLength(numberOfProcessors));
       expect(worker.workingIsolates, isEmpty);
       worker.close();
     });
