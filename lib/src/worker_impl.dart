@@ -178,10 +178,13 @@ class _WorkerIsolateImpl implements WorkerIsolate {
         this._runningScheduledTask.completer.complete(message);
       }
       
+      this._runningScheduledTask = null;
+      
       this._runNextTask();
     },
     onError: (exception) {
         this._runningScheduledTask.completer.completeError(exception);
+        this._runningScheduledTask = null;
       }
     );
     
