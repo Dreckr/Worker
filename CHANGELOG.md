@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.5
+  Bug fix.
+
+## 0.3.4
+  Improved isolate selection and load distribution.
+
 ## 0.3.3
   Major bug fix.
 

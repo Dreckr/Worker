@@ -116,7 +116,7 @@ class _WorkerImpl implements Worker {
                   (isolate) => isolate.isFree,
                   orElse: () => this.isolates.reduce(
                       (a, b) => 
-                          a.scheduledTasks.length >= b.scheduledTasks.length ?
+                          a.scheduledTasks.length <= b.scheduledTasks.length ?
                               a : b));
             }
 
