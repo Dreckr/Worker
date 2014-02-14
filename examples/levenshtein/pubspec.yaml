@@ -1,0 +1,6 @@
+name: WorkerLevenshtein
+description: A sample command-line application
+dependencies:
+  benchmark_harness: any
+  levenshtein: any
+  worker: any
