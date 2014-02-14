@@ -153,7 +153,8 @@ class _WorkerIsolateImpl implements WorkerIsolate {
                             _runningScheduledTask.task : null;
   
   List<Task> get scheduledTasks =>
-      _scheduledTasks.map((scheduledTask) => scheduledTask.task);
+      _scheduledTasks.map((scheduledTask) => scheduledTask.task)
+        .toList(growable: false);
   
   bool get isFree => _scheduledTasks.isEmpty && _runningScheduledTask == null;
 
