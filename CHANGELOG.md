@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.7
+  Bug fix.
+
 ## 0.3.6
   Minor bug fix.
 

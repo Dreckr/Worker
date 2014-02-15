@@ -31,8 +31,8 @@ abstract class Worker {
   /// Isolates that are currently performing a task.
   Iterable<WorkerIsolate> get workingIsolates;
   
-  factory Worker ({poolSize, spawnLazily : true}) {
-    if (poolSize  == null) {
+  factory Worker ({int poolSize, bool spawnLazily : true}) {
+    if (poolSize == null) {
       poolSize = Platform.numberOfProcessors;
     }
     
