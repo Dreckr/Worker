@@ -1,144 +1,15 @@
-import 'dart:async';
-import 'dart:io';
-import 'package:worker/worker.dart';
-import 'package:unittest/unittest.dart';
+library worker.test;
+
 import 'package:unittest/vm_config.dart';
+import 'construction_test.dart';
+import 'execution_test.dart';
+import 'stress_test.dart';
 
 void main () {
   useVMConfiguration();
-  var numberOfProcessors = Platform.numberOfProcessors;
-
-  group('Worker construction', () {
-    Worker worker;
-
-    test('with empty constructor', () {
-      worker = new Worker();
-      expect(worker.poolSize, equals(numberOfProcessors));
-      expect(worker.isolates, isEmpty);
-      expect(worker.availableIsolates, isEmpty);
-      expect(worker.workingIsolates, isEmpty);
-      worker.close();
-    });
-
-    test('with poolSize parameter constructor', () {
-      int poolSize = 4;
-      worker = new Worker(poolSize: poolSize);
-      expect(worker.poolSize, equals(poolSize));
-      expect(worker.isolates, isEmpty);
-      expect(worker.availableIsolates, isEmpty);
-      expect(worker.workingIsolates, isEmpty);
-      worker.close();
-    });
-
-    test('with spawnLazily parameter constructor', () {
-      worker = new Worker(spawnLazily: false);
-      expect(worker.poolSize, equals(numberOfProcessors));
-      expect(worker.isolates, hasLength(numberOfProcessors));
-      expect(worker.availableIsolates, hasLength(numberOfProcessors));
-      expect(worker.workingIsolates, isEmpty);
-      worker.close();
-    });
-
-    test('with poolSize and spawnLazily parameters constructor', () {
-      int poolSize = 4;
-      worker = new Worker(poolSize: poolSize, spawnLazily: false);
-      expect(worker.poolSize, poolSize);
-      expect(worker.isolates, hasLength(poolSize));
-      expect(worker.availableIsolates, hasLength(poolSize));
-      expect(worker.workingIsolates, isEmpty);
-      worker.close();
-    });
-  });
-
-  group ('Task execution', () {
-    Worker worker;
-    Task task;
-
-    setUp(() {
-      worker = new Worker();
-    });
-    
-    tearDown(() {
-      worker.close();
-    });
-
-    test('of sync task', () {
-      task = new AddTask(1, 2);
-
-      worker.handle(task).then(expectAsync1((result) {
-        expect(result, isNotNull);
-        expect(result, equals(3));
-      }));
-    });
-
-    test('of sync task with exception', () {
-      task = new AddTask(1, 2, throwException: true);
-
-
-      worker.handle(task).then((result) {
-      },
-      onError: expectAsync1((error) {
-        expect(error, isNotNull);
-      })
-      );
-    });
-
-    test('of async task', () {
-      task = new AsyncAddTask(3, 2);
-
-      worker.handle(task).then(expectAsync1((result) {
-        expect(result, isNotNull);
-        expect(result, equals(5));
-      }));
-    });
-
-    test('of async task with exception', () {
-      task = new AsyncAddTask(1, 2, throwException: true);
-
-      worker.handle(task).then((result) {
-      },
-      onError: expectAsync1((error) {
-        expect(error, isNotNull);
-      })
-      );
-
-    });
-
-  });
-}
-
-class AddTask implements Task {
-  int x, y;
-  bool throwException;
-
-  AddTask (this.x, this.y, {this.throwException: false});
-
-  int execute () {
-    if (this.throwException)
-      throw new Exception('Test Future Exception');
-    else
-      return x + y;
-  }
-}
-
-class AsyncAddTask implements Task {
-  int x, y;
-  bool throwException;
-
-  AsyncAddTask (this.x, this.y, {this.throwException: false});
-
-  Future execute () {
-    Completer completer = new Completer();
-
-    scheduleMicrotask(() {
-      if (this.throwException)
-        completer.completeError(new Exception('Test Async Exception'));
-      else
-        completer.complete(x + y);
-      });
-
-    return completer.future;
-  }
+  
+  constructionTest();
+  executionTest();
+  stressTest();
 
 }
-
