@@ -1,6 +1,5 @@
 name: WorkerLevenshtein
-description: A sample command-line application
+description: An example of how to use Worker to compare your Strings using Levenshtein.
 dependencies:
-  benchmark_harness: any
   levenshtein: any
   worker: any

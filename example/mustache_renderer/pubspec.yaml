@@ -1,5 +1,5 @@
 name: WorkerMustache
-description: An example on how to do a concurrent Mustache renderer for your server
+description: An example of how use Worker to do a concurrent Mustache renderer for your server.
 dependencies:
   http_server: any
   mustache: any

@@ -1,0 +1,4 @@
+name: WorkerFibonacci
+description: An example of how to use Worker to do your Fibonacci calculations.
+dependencies:
+  worker: any
