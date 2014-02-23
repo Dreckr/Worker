@@ -148,11 +148,12 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   }
 
   void close () {
+    _receivePort.close();
+    
     if (this._sendPort == null) {
       return;
     }
     
-    _receivePort.close();
     _sendPort.send(_CLOSE_SIGNAL);
   }
 

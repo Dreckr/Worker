@@ -59,6 +59,8 @@ abstract class WorkerIsolate {
   Task get runningTask;
   List<Task> get scheduledTasks;
   
+  factory WorkerIsolate() => new _WorkerIsolateImpl();
+  
   Future performTask (Task task);
   
   /// Closes the [ReceivePort] of the isolate;
