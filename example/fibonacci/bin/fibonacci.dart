@@ -5,7 +5,7 @@ void main() {
   final worker = new Worker();
   var futures = [];
   
-  for (var i in [10, 20, 30, 40, 30, 20]) {
+  for (var i in [10, 20, 30, 40, 31, 21]) {
     futures.add(worker.handle(new FibTask(i)));
   }
 
@@ -22,7 +22,9 @@ int fib(int n) {
 }
 
 class FibTask extends Task {
-  int _v;
-  FibTask(this._v);
-  execute() => fib(_v);
+  int n;
+  
+  FibTask(this.n);
+  
+  execute() => fib(n);
 }
