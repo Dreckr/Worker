@@ -1,48 +1,61 @@
 part of worker;
 
-ReceivePort _localPort;
-SendPort _mainPort;
+void _workerMain (sendPort) {
+  ReceivePort receivePort;
+  if (receivePort == null) {
+    receivePort = new ReceivePort();
+  }
 
-void _workerMain (mainPort) {
-  if (_localPort == null) {
-    _localPort = new ReceivePort();
+  if (sendPort is SendPort) {
+    sendPort = sendPort;
+    sendPort.send(receivePort.sendPort);
   }
-  
-  if (mainPort is SendPort) {
-    mainPort = mainPort;
-    mainPort.send(_localPort.sendPort);
-  }
-  
-  _localPort.listen((message) {
-    if (!_acceptMessage(message))
+
+  receivePort.listen((message) {
+    if (!_acceptMessage(receivePort, message))
         return;
-  
-    if (message is Task) {
-      var result;
-  
-      try {
-        result = message.execute();
-      } catch (exception) {
-        mainPort.send(new _WorkerError(exception));
-      }
-  
-      if (result is Future) {
-        result.then(
-            (futureResult) => mainPort.send(futureResult),
-            onError: (exception) => mainPort.send(new _WorkerError(exception)));
-      } else {
-        mainPort.send(result);
-      }
-    } else
-      mainPort.send(new _WorkerError(new Exception('Message is not a task')));
+
+    var result;
+
+    try {
+      if (message is Task) {
+          result = message.execute();
+
+          if (result is Future) {
+            result.then(
+                (futureResult) => sendPort.send(futureResult),
+                onError: (exception, stackTrace) =>
+                    sendException(sendPort, exception, stackTrace));
+          } else {
+            sendPort.send(result);
+          }
+      } else
+        throw new Exception('Message is not a task');
+    } catch (exception, stackTrace) {
+      sendException(sendPort, exception, stackTrace);
+    }
   });
 }
 
-bool _acceptMessage (message) {
+bool _acceptMessage (ReceivePort receivePort, message) {
   if (message is _WorkerSignal && message.id == _CLOSE_SIGNAL.id) {
-    _localPort.close();
+    receivePort.close();
     return false;
   }
 
   return true;
+}
+
+void sendException (SendPort sendPort, exception, StackTrace stackTrace) {
+  if (exception is Error) {
+    exception = Error.safeToString(exception);
+  }
+
+  var stackTraceFrames;
+  if (stackTrace != null) {
+    stackTraceFrames = new Trace.from(stackTrace).frames;
+  }
+
+  sendPort.send(
+      new _WorkerException(exception, stackTraceFrames));
 }

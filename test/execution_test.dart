@@ -12,7 +12,7 @@ void executionTest() {
     setUp(() {
       worker = new Worker();
     });
-    
+
     tearDown(() {
       worker.close();
     });
@@ -20,7 +20,7 @@ void executionTest() {
     test('of sync task', () {
       task = new AddTask(1, 2);
 
-      worker.handle(task).then(expectAsync1((result) {
+      worker.handle(task).then(expectAsync((result) {
         expect(result, isNotNull);
         expect(result, equals(3));
       }));
@@ -32,7 +32,7 @@ void executionTest() {
 
       worker.handle(task).then((result) {
       },
-      onError: expectAsync1((error) {
+      onError: expectAsync((error) {
         expect(error, isNotNull);
       })
       );
@@ -41,7 +41,7 @@ void executionTest() {
     test('of async task', () {
       task = new AsyncAddTask(3, 2);
 
-      worker.handle(task).then(expectAsync1((result) {
+      worker.handle(task).then(expectAsync((result) {
         expect(result, isNotNull);
         expect(result, equals(5));
       }));
@@ -52,8 +52,21 @@ void executionTest() {
 
       worker.handle(task).then((result) {
       },
-      onError: expectAsync1((error) {
+      onError: expectAsync((error) {
         expect(error, isNotNull);
+      })
+      );
+
+    });
+
+    test('of task with error', () {
+      task = new UnknownVariableTask();
+
+      worker.handle(task).then((result) {
+      },
+      onError: expectAsync((error, stackTrace) {
+        expect(error, isNotNull);
+        expect(stackTrace, isNotNull);
       })
       );
 
@@ -95,4 +108,12 @@ class AsyncAddTask implements Task {
     return completer.future;
   }
 
+}
+
+class UnknownVariableTask implements Task {
+
+  @override
+  execute() {
+    run = a;
+  }
 }
