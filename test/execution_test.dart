@@ -60,7 +60,7 @@ void executionTest() {
     });
 
     test('of task with error', () {
-      task = new UnknownVariableTask();
+      task = new NoSuchMethodTask();
 
       worker.handle(task).then((result) {
       },
@@ -110,7 +110,7 @@ class AsyncAddTask implements Task {
 
 }
 
-class UnknownVariableTask implements Task {
+class NoSuchMethodTask implements Task {
 
   @override
   execute() {

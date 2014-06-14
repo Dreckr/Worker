@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.3.9
+- Proper error handling with stackTrace support. ([#7](https://github.com/Dreckr/Worker/issues/7))
 ## 0.3.8
 - WorkerIsolate factory. ([#6](https://github.com/Dreckr/Worker/issues/6))
 
@@ -35,6 +37,7 @@
 
 ## 0.2.0
 Major rewrite:
+
 - Isolates now may handle more than one Task at the time.
 - Creation of the WorkerIsolate to abstract comunication with isolates.
 - 'execute' method from Worker renamed to 'handle'.
