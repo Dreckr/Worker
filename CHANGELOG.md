@@ -1,7 +1,11 @@
 # Changelog
 
+## 0.3.10
+- Support tasks that do not return. ([#8](https://github.com/Dreckr/Worker/issues/8))
+
 ## 0.3.9
 - Proper error handling with stackTrace support. ([#7](https://github.com/Dreckr/Worker/issues/7))
+
 ## 0.3.8
 - WorkerIsolate factory. ([#6](https://github.com/Dreckr/Worker/issues/6))
 
