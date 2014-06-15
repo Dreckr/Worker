@@ -107,8 +107,8 @@ class _WorkerIsolateImpl implements WorkerIsolate {
       if (message is _WorkerException) {
         this._runningScheduledTask.completer
           .completeError(message.exception, message.stackTrace);
-      } else if (message != null) {
-        this._runningScheduledTask.completer.complete(message);
+      } else if (message is _WorkerResult) {
+        this._runningScheduledTask.completer.complete(message.result);
       }
 
       this._runningScheduledTask = null;
@@ -178,6 +178,12 @@ class _WorkerSignal {
 
   const _WorkerSignal (this.id);
 
+}
+
+class _WorkerResult {
+  final result;
+
+  _WorkerResult (this.result);
 }
 
 class _WorkerException {

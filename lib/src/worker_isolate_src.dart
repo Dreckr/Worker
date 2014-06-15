@@ -23,11 +23,12 @@ void _workerMain (sendPort) {
 
           if (result is Future) {
             result.then(
-                (futureResult) => sendPort.send(futureResult),
+                (futureResult) =>
+                    sendPort.send(new _WorkerResult(futureResult)),
                 onError: (exception, stackTrace) =>
                     sendException(sendPort, exception, stackTrace));
           } else {
-            sendPort.send(result);
+            sendPort.send(new _WorkerResult(result));
           }
       } else
         throw new Exception('Message is not a task');

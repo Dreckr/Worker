@@ -60,7 +60,7 @@ void executionTest() {
     });
 
     test('of task with error', () {
-      task = new NoSuchMethodTask();
+      task = new ErrorTask();
 
       worker.handle(task).then((result) {
       },
@@ -70,6 +70,14 @@ void executionTest() {
       })
       );
 
+    });
+
+    test('of task with no return', () {
+      task = new NoReturnTask();
+
+      var future = worker.handle(task);
+
+      expect(future, completes);
     });
 
   });
@@ -110,10 +118,23 @@ class AsyncAddTask implements Task {
 
 }
 
-class NoSuchMethodTask implements Task {
+class ErrorTask implements Task {
 
   @override
-  execute() {
-    run = a;
+  int execute() {
+    var a;
+    var b;
+
+    return a / b;
+  }
+}
+
+class NoReturnTask implements Task {
+
+  @override
+  void execute() {
+    var a = 1;
+    var b = 2;
+    var c = a + b;
   }
 }
