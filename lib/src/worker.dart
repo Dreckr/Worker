@@ -26,7 +26,7 @@ abstract class Worker {
   /// All spawned isolates
   Queue<WorkerIsolate> get isolates;
 
-  /// Spawned isolates that free to handle more tasks.
+  /// Spawned isolates that are free to handle more tasks.
   Iterable<WorkerIsolate> get availableIsolates;
 
   /// Isolates that are currently performing a task.
