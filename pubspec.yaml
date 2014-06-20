@@ -1,5 +1,5 @@
 name: worker
-version: 0.3.10
+version: 0.3.11
 author: Diego Rocha <diego.rocha.comp@gmail.com>
 description: Utility for easy concurrency with isolates
 homepage: https://github.com/Dreckr/Worker

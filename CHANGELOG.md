@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.11
+- Loosen stack_trace min version dependency. ([#12](https://github.com/Dreckr/Worker/issues/12))
+
 ## 0.3.10
 - Support tasks that do not return. ([#8](https://github.com/Dreckr/Worker/issues/8))
 
