@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+  Streams of events have been added, giving better monitoring capabilities.
+
 ## 0.3.11
 - Loosen stack_trace min version dependency. ([#12](https://github.com/Dreckr/Worker/issues/12))
 

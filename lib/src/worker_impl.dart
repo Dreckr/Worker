@@ -1,4 +1,4 @@
-part of worker;
+part of worker.core;
 
 class _WorkerImpl implements Worker {
   bool _isClosed = false;

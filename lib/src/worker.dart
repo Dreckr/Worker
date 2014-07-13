@@ -1,4 +1,4 @@
-library worker;
+library worker.core;
 
 import 'dart:async';
 import 'dart:collection';
@@ -33,14 +33,19 @@ abstract class Worker {
   /// Isolates that are currently performing a task.
   Iterable<WorkerIsolate> get workingIsolates;
 
+  /// Stream of isolate spawned events.
   Stream<IsolateSpawnedEvent> get onIsolateSpawned;
 
+  /// Stream of isolate closed events.
   Stream<IsolateClosedEvent> get onIsolateClosed;
 
+  /// Stream of task scheduled events.
   Stream<TaskScheduledEvent> get onTaskScheduled;
 
+  /// Stream of task completed events.
   Stream<TaskCompletedEvent> get onTaskCompleted;
 
+  /// Stream of task failed events.
   Stream<TaskFailedEvent> get onTaskFailed;
 
   factory Worker ({int poolSize, bool spawnLazily : true}) {
@@ -71,14 +76,19 @@ abstract class WorkerIsolate {
   Task get runningTask;
   List<Task> get scheduledTasks;
 
+  /// Stream of task spawned events.
   Stream<IsolateSpawnedEvent> get onSpawned;
 
+  /// Stream of task closed events.
   Stream<IsolateClosedEvent> get onClosed;
 
+  /// Stream of task scheduled events.
   Stream<TaskScheduledEvent> get onTaskScheduled;
 
+  /// Stream of task completed events.
   Stream<TaskCompletedEvent> get onTaskCompleted;
 
+  /// Stream of task failed events.
   Stream<TaskFailedEvent> get onTaskFailed;
 
   factory WorkerIsolate () => new _WorkerIsolateImpl();

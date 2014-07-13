@@ -1,4 +1,4 @@
-part of worker;
+part of worker.core;
 
 void _workerMain (sendPort) {
   ReceivePort receivePort;
