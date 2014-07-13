@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:worker/worker.dart';
 import 'package:unittest/unittest.dart';
 
-void constructionTest() {
+void constructionTest () {
   final numberOfProcessors = Platform.numberOfProcessors;
-  
+
   group('Worker construction:', () {
     Worker worker;
 

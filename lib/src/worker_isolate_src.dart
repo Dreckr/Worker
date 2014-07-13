@@ -12,7 +12,7 @@ void _workerMain (sendPort) {
   }
 
   receivePort.listen((message) {
-    if (!_acceptMessage(receivePort, message))
+    if (!_acceptMessage(sendPort, receivePort, message))
         return;
 
     var result;
@@ -38,8 +38,9 @@ void _workerMain (sendPort) {
   });
 }
 
-bool _acceptMessage (ReceivePort receivePort, message) {
+bool _acceptMessage (SendPort sendPort, ReceivePort receivePort, message) {
   if (message is _WorkerSignal && message.id == _CLOSE_SIGNAL.id) {
+    sendPort.send(_CLOSE_SIGNAL);
     receivePort.close();
     return false;
   }

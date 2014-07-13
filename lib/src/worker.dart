@@ -5,6 +5,7 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:stack_trace/stack_trace.dart';
+import 'events.dart';
 
 part 'worker_impl.dart';
 part 'worker_isolate_src.dart';
@@ -13,7 +14,7 @@ part 'worker_isolate_src.dart';
  * A concurrent [Task] executor.
  *
  * A [Worker] creates and manages a pool of isolates providing you with an easy
- * way to perform blocking tasks concurrently. It spawns isolates lazilly as [Task]s
+ * way to perform blocking tasks concurrently. It spawns isolates lazily as [Task]s
  * are required to execute.
  */
 
@@ -31,6 +32,16 @@ abstract class Worker {
 
   /// Isolates that are currently performing a task.
   Iterable<WorkerIsolate> get workingIsolates;
+
+  Stream<IsolateSpawnedEvent> get onIsolateSpawned;
+
+  Stream<IsolateClosedEvent> get onIsolateClosed;
+
+  Stream<TaskScheduledEvent> get onTaskScheduled;
+
+  Stream<TaskCompletedEvent> get onTaskCompleted;
+
+  Stream<TaskFailedEvent> get onTaskFailed;
 
   factory Worker ({int poolSize, bool spawnLazily : true}) {
     if (poolSize == null) {
@@ -60,7 +71,17 @@ abstract class WorkerIsolate {
   Task get runningTask;
   List<Task> get scheduledTasks;
 
-  factory WorkerIsolate() => new _WorkerIsolateImpl();
+  Stream<IsolateSpawnedEvent> get onSpawned;
+
+  Stream<IsolateClosedEvent> get onClosed;
+
+  Stream<TaskScheduledEvent> get onTaskScheduled;
+
+  Stream<TaskCompletedEvent> get onTaskCompleted;
+
+  Stream<TaskFailedEvent> get onTaskFailed;
+
+  factory WorkerIsolate () => new _WorkerIsolateImpl();
 
   Future performTask (Task task);
 
