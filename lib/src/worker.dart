@@ -59,8 +59,9 @@ abstract class Worker {
   /// Returns a [Future] with the result of the execution of the [Task].
   Future handle (Task task);
 
-  /// Closes the [ReceivePort] of the isolates;
-  void close ();
+  /// Closes the [ReceivePort] of the isolates.
+  /// Waits until all scheduled tasks have completed if [afterDone] is `true`.
+  Future<Worker> close ({bool afterDone});
 
 }
 
@@ -95,8 +96,18 @@ abstract class WorkerIsolate {
 
   Future performTask (Task task);
 
-  /// Closes the [ReceivePort] of the isolate;
-  void close ();
+  /// Closes the [ReceivePort] of the isolate.
+  /// Waits until all scheduled tasks have completed if [afterDone] is `true`.
+  Future<WorkerIsolate> close ({bool afterDone});
+}
+
+class TaskCancelledException implements Exception {
+  final Task task;
+
+  TaskCancelledException (this.task);
+
+  String toString() =>
+      "$task cancelled.";
 }
 
 /**

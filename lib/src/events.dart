@@ -39,6 +39,10 @@ class TaskFailedEvent extends WorkerEvent {
   final error;
   final StackTrace stackTrace;
 
-  TaskFailedEvent(WorkerIsolate isolate, this.task, this.error, this.stackTrace) :
+  TaskFailedEvent(WorkerIsolate isolate,
+                      this.task,
+                      this.error,
+                      [this.stackTrace = null]) :
+
         super("taskFailed", isolate);
 }

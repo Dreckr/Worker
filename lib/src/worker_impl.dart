@@ -101,10 +101,17 @@ class _WorkerImpl implements Worker {
     return isolate;
   }
 
-  void close () {
+  Future<Worker> close ({bool afterDone: true}) {
+    if (this._isClosed)
+          return new Future.value(this);
+
     this._isClosed = true;
 
-    this.isolates.forEach((isolate) => isolate.close());
+    var closeFutures = [];
+    this.isolates.forEach(
+        (isolate) => closeFutures.add(isolate.close(afterDone: afterDone)));
+
+    return Future.wait(closeFutures).then((_) => this);
   }
 
 }
@@ -161,6 +168,8 @@ class _WorkerIsolateImpl implements WorkerIsolate {
   Stream<TaskFailedEvent> get onTaskFailed =>
       _taskFailedEventController.stream;
 
+  Completer<WorkerIsolate> _closeCompleter;
+
   _WorkerIsolateImpl () {
     this._receivePort = new ReceivePort();
 
@@ -180,11 +189,11 @@ class _WorkerIsolateImpl implements WorkerIsolate {
           completer.complete(this);
           this._spawnEventController.add(new IsolateSpawnedEvent(this));
           this._sendPort = message;
-          this._runNextTask();
-          return;
-        }
 
-        if (message is _WorkerException) {
+          this._runNextTask();
+
+          return;
+        } else if (message is _WorkerException) {
           this._taskFailedEventController.add(
               new TaskFailedEvent(this,
                                   this._runningScheduledTask.task,
@@ -223,11 +232,11 @@ class _WorkerIsolateImpl implements WorkerIsolate {
 
   Future performTask (Task task) {
     if (this.isClosed)
-      throw new Exception('Isolate is closed!');
+      throw new StateError('This WorkerIsolate is closed.');
 
-    this._taskScheduledEventController.add(new TaskScheduledEvent(this, task));
     Completer completer = new Completer();
     this._scheduledTasks.add(new _ScheduledTask(task, completer));
+    this._taskScheduledEventController.add(new TaskScheduledEvent(this, task));
 
     this._runNextTask();
 
@@ -238,8 +247,9 @@ class _WorkerIsolateImpl implements WorkerIsolate {
     if (_sendPort == null ||
         _scheduledTasks.length == 0 ||
         (_runningScheduledTask != null &&
-        !_runningScheduledTask.completer.isCompleted))
+        !_runningScheduledTask.completer.isCompleted)) {
       return;
+    }
 
     _runningScheduledTask = _scheduledTasks.removeFirst();
 
@@ -255,13 +265,66 @@ class _WorkerIsolateImpl implements WorkerIsolate {
     this._taskFailedEventController.close();
   }
 
-  void close () {
-    if (this._sendPort == null) {
-      this._closeEventController.add(new IsolateClosedEvent(this));
-      return;
+  Future<WorkerIsolate> close ({bool afterDone: true}) {
+    if (this._isClosed)
+      return new Future.value(this);
+
+    this._isClosed = true;
+    this._closeCompleter = new Completer<WorkerIsolate>();
+
+    if (afterDone) {
+      var closeIfDone = (_) {
+        if (this.isFree) {
+          this._close();
+        }
+      };
+
+      var waitTasksToComplete = () {
+        if (!this.isFree) {
+          this.onTaskCompleted.listen(closeIfDone);
+          this.onTaskFailed.listen(closeIfDone);
+        } else {
+          this._close();
+        }
+      };
+
+      if (this._sendPort == null) {
+        this.onSpawned.listen((_) {
+          waitTasksToComplete();
+        });
+      } else {
+        waitTasksToComplete();
+      }
+    } else {
+      this.onSpawned.first.then((_) {
+        this._close();
+      });
     }
 
-    _sendPort.send(_CLOSE_SIGNAL);
+    return this._closeCompleter.future;
+  }
+
+  void _close () {
+    if (this._sendPort != null) {
+      this._sendPort.send(_CLOSE_SIGNAL);
+      this._sendPort = null;
+    }
+
+    this._closeEventController.add(new IsolateClosedEvent(this));
+    this._closeCompleter.complete(this);
+
+    var cancelTask = (scheduledTask) {
+      var exception = new TaskCancelledException(scheduledTask.task);
+      scheduledTask.completer.completeError(exception);
+            this._taskFailedEventController.add(
+                new TaskFailedEvent(this, scheduledTask.task, exception));
+    };
+
+    if (this._runningScheduledTask != null) {
+      cancelTask(this._runningScheduledTask);
+    }
+
+    this._scheduledTasks.forEach(cancelTask);
   }
 
 }

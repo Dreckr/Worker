@@ -10,7 +10,7 @@ void executionTest () {
     Task task;
 
     setUp(() {
-      worker = new Worker();
+      worker = new Worker(poolSize: 1);
     });
 
     tearDown(() {
@@ -73,6 +73,32 @@ void executionTest () {
       var future = worker.handle(task);
 
       expect(future, completes);
+    });
+
+    test('wait for tasks to be completed', () {
+      var task1 = new LongRunningTask();
+      var task2 = new LongRunningTask();
+
+      var future1 = worker.handle(task1);
+      var future2 = worker.handle(task2);
+      var closeFuture = worker.close(afterDone: true);
+
+      expect(future1, completes);
+      expect(future2, completes);
+      expect(closeFuture, completes);
+    });
+
+    test('does not wait for tasks to be completed', () {
+      var task1 = new LongRunningTask();
+      var task2 = new LongRunningTask();
+
+      var future1 = worker.handle(task1);
+      var future2 = worker.handle(task2);
+      var closeFuture = worker.close(afterDone: false);
+
+      expect(future1, throwsA(new isInstanceOf<TaskCancelledException>()));
+      expect(future2, throwsA(new isInstanceOf<TaskCancelledException>()));
+      expect(closeFuture, completes);
     });
 
   });
