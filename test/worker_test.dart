@@ -9,9 +9,9 @@ import 'stress_test.dart';
 void main () {
   useVMConfiguration();
 
-//  constructionTest();
-//  eventsTest();
+  constructionTest();
+  eventsTest();
   executionTest();
-//  stressTest();
+  stressTest();
 
 }

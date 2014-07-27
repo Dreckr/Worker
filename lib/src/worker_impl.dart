@@ -310,6 +310,7 @@ class _WorkerIsolateImpl implements WorkerIsolate {
       this._sendPort = null;
     }
 
+    this._receivePort.close();
     this._closeEventController.add(new IsolateClosedEvent(this));
     this._closeCompleter.complete(this);
 
