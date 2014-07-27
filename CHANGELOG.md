@@ -1,19 +1,22 @@
 # Changelog
 
+## 0.5.0
+  Workers and WorkerIsolates now can wait until all tasks have been completed before closing. ([#10] (https://github.com/Dreckr/Worker/issues/10))
+
 ## 0.4.0
-  Streams of events have been added, giving better monitoring capabilities.
+  Streams of events have been added, giving better monitoring capabilities. ([#11](https://github.com/Dreckr/Worker/issues/11))
 
 ## 0.3.11
-- Loosen stack_trace min version dependency. ([#12](https://github.com/Dreckr/Worker/issues/12))
+  Loosen stack_trace min version dependency. ([#12](https://github.com/Dreckr/Worker/issues/12))
 
 ## 0.3.10
-- Support tasks that do not return. ([#8](https://github.com/Dreckr/Worker/issues/8))
+  Support tasks that do not return. ([#8](https://github.com/Dreckr/Worker/issues/8))
 
 ## 0.3.9
-- Proper error handling with stackTrace support. ([#7](https://github.com/Dreckr/Worker/issues/7))
+  Proper error handling with stackTrace support. ([#7](https://github.com/Dreckr/Worker/issues/7))
 
 ## 0.3.8
-- WorkerIsolate factory. ([#6](https://github.com/Dreckr/Worker/issues/6))
+  WorkerIsolate factory. ([#6](https://github.com/Dreckr/Worker/issues/6))
 
 ## 0.3.7
   Bug fix.

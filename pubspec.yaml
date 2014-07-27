@@ -1,11 +1,11 @@
 name: worker
-version: 0.4.0
+version: 0.5.0
 author: Diego Rocha <diego.rocha.comp@gmail.com>
 description: Utility for easy concurrency with isolates
 homepage: https://github.com/Dreckr/Worker
 environment:
   sdk: '>=1.0.0'
-documentation: http://www.dartdocs.org/documentation/worker/0.4.0/index.html
+documentation: http://www.dartdocs.org/documentation/worker/0.5.0/index.html
 dependencies:
   stack_trace: '>=0.9.0 <2.0.0'
 dev_dependencies:
