@@ -25,7 +25,7 @@ class AsyncAddTask implements Task<Future<int>> {
   AsyncAddTask (this.x, this.y, {this.throwException: false});
 
   Future<int> execute () {
-    Completer completer = new Completer();
+    final completer = new Completer<int>();
 
     scheduleMicrotask(() {
       if (this.throwException)
