@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+  Upgraded package Worker to be Dart2 compatible ([#14](https://github.com/Dreckr/Worker/issues/14))
+
 ## 0.5.0
   Workers and WorkerIsolates now can wait until all tasks have been completed before closing. ([#10] (https://github.com/Dreckr/Worker/issues/10))
 

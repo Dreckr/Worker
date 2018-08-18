@@ -107,7 +107,7 @@ class _WorkerImpl implements Worker {
 
     this._isClosed = true;
 
-    var closeFutures = [];
+    var closeFutures = <Future<WorkerIsolate>>[];
     this.isolates.forEach(
         (isolate) => closeFutures.add(isolate.close(afterDone: afterDone)));
 

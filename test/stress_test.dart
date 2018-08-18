@@ -3,10 +3,10 @@ library worker.test.stress;
 import 'dart:async';
 import 'dart:io';
 import 'package:worker/worker.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'common.dart';
 
-void stressTest () {
+void main () {
   group("Stress test:", () {
     Worker worker;
 
@@ -25,7 +25,7 @@ void stressTest () {
     });
 
     test("Run one long running task for each processor", () {
-      var futures = [];
+      var futures = <Future>[];
 
       for (var i = 0; i < Platform.numberOfProcessors; i++) {
         futures.add(worker.handle(new LongRunningTask()));
@@ -35,7 +35,7 @@ void stressTest () {
     });
 
     test("Run more long running tasks than available processors", () {
-      var futures = [];
+      var futures = <Future>[];
 
       for (var i = 0; i < Platform.numberOfProcessors *2; i++) {
         futures.add(worker.handle(new LongRunningTask()));
