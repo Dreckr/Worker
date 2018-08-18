@@ -1,10 +1,10 @@
 library worker.test.events;
 
 import 'package:worker/worker.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'common.dart';
 
-void eventsTest () {
+void main () {
   group('Event broadcast:', () {
     Worker worker;
     Task task;
@@ -12,9 +12,9 @@ void eventsTest () {
     test('of isolate spawned', () {
       worker = new Worker(poolSize: 1, spawnLazily: false);
 
-      worker.onIsolateSpawned.listen(expectAsync((spawnedEvent) {
-        expect(spawnedEvent, new isInstanceOf<IsolateSpawnedEvent>());
-        expect(spawnedEvent.isolate, new isInstanceOf<WorkerIsolate>());
+      worker.onIsolateSpawned.listen(expectAsync1((spawnedEvent) {
+        expect(spawnedEvent, TypeMatcher<IsolateSpawnedEvent>());
+        expect(spawnedEvent.isolate, TypeMatcher<WorkerIsolate>());
       }));
 
       worker.close();
@@ -23,9 +23,9 @@ void eventsTest () {
     test('of isolate closed', () {
       worker = new Worker(poolSize: 1, spawnLazily: false);
 
-      worker.onIsolateClosed.listen(expectAsync((closedEvent) {
-        expect(closedEvent, new isInstanceOf<IsolateClosedEvent>());
-        expect(closedEvent.isolate, new isInstanceOf<WorkerIsolate>());
+      worker.onIsolateClosed.listen(expectAsync1((closedEvent) {
+        expect(closedEvent, TypeMatcher<IsolateClosedEvent>());
+        expect(closedEvent.isolate, TypeMatcher<WorkerIsolate>());
       }));
 
       worker.close();
@@ -35,10 +35,10 @@ void eventsTest () {
       worker = new Worker(poolSize: 1, spawnLazily: false);
       task = new SimpleTask();
 
-      worker.onTaskScheduled.listen(expectAsync((taskScheduledEvent) {
-        expect(taskScheduledEvent, new isInstanceOf<TaskScheduledEvent>());
+      worker.onTaskScheduled.listen(expectAsync1((taskScheduledEvent) {
+        expect(taskScheduledEvent, TypeMatcher<TaskScheduledEvent>());
         expect(taskScheduledEvent.task, task);
-        expect(taskScheduledEvent.isolate, new isInstanceOf<WorkerIsolate>());
+        expect(taskScheduledEvent.isolate, TypeMatcher<WorkerIsolate>());
       }));
 
       worker.handle(task);
@@ -50,11 +50,11 @@ void eventsTest () {
       worker = new Worker(poolSize: 1, spawnLazily: false);
       task = new SimpleTask();
 
-      worker.onTaskCompleted.listen(expectAsync((taskCompletedEvent) {
-        expect(taskCompletedEvent, new isInstanceOf<TaskCompletedEvent>());
+      worker.onTaskCompleted.listen(expectAsync1((taskCompletedEvent) {
+        expect(taskCompletedEvent, TypeMatcher<TaskCompletedEvent>());
         expect(taskCompletedEvent.task, task);
         expect(taskCompletedEvent.result, 'Success');
-        expect(taskCompletedEvent.isolate, new isInstanceOf<WorkerIsolate>());
+        expect(taskCompletedEvent.isolate, TypeMatcher<WorkerIsolate>());
       }));
 
       worker.handle(task);
@@ -66,17 +66,17 @@ void eventsTest () {
       worker = new Worker(poolSize: 1, spawnLazily: false);
       task = new ErrorTask();
 
-      worker.onTaskFailed.listen(expectAsync((taskFailedEvent) {
-        expect(taskFailedEvent, new isInstanceOf<TaskFailedEvent>());
+      worker.onTaskFailed.listen(expectAsync1((taskFailedEvent) {
+        expect(taskFailedEvent, TypeMatcher<TaskFailedEvent>());
         expect(taskFailedEvent.task, task);
         expect(taskFailedEvent.error, isNotNull);
-        expect(taskFailedEvent.stackTrace, new isInstanceOf<StackTrace>());
-        expect(taskFailedEvent.isolate, new isInstanceOf<WorkerIsolate>());
+        expect(taskFailedEvent.stackTrace, TypeMatcher<StackTrace>());
+        expect(taskFailedEvent.isolate, TypeMatcher<WorkerIsolate>());
       }));
 
       worker.handle(task).then(
           (result) {},
-          onError: expectAsync((error, stackTrace) {})
+          onError: expectAsync2((error, stackTrace) {})
       );
 
       worker.close();

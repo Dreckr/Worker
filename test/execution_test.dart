@@ -1,10 +1,10 @@
 library worker.test.execution;
 
 import 'package:worker/worker.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'common.dart';
 
-void executionTest () {
+void main () {
   group('Task execution:', () {
     Worker worker;
     Task task;
@@ -20,7 +20,7 @@ void executionTest () {
     test('of sync task', () {
       task = new AddTask(1, 2);
 
-      worker.handle(task).then(expectAsync((result) {
+      worker.handle(task).then(expectAsync1((result) {
         expect(result, equals(3));
       }));
     });
@@ -31,14 +31,14 @@ void executionTest () {
 
       worker.handle(task).then(
           (result) {},
-      onError: expectAsync(
+      onError: expectAsync1(
           (error) => expect(error, isNotNull)));
     });
 
     test('of async task', () {
       task = new AsyncAddTask(3, 2);
 
-      worker.handle(task).then(expectAsync((result) {
+      worker.handle(task).then(expectAsync1((result) {
         expect(result, equals(5));
       }));
     });
@@ -48,7 +48,7 @@ void executionTest () {
 
       worker.handle(task).then(
           (result) {},
-          onError: expectAsync(
+          onError: expectAsync1(
               (error) => expect(error, isNotNull))
       );
 
@@ -59,9 +59,9 @@ void executionTest () {
 
       worker.handle(task).then(
           (result) {},
-          onError: expectAsync((error, stackTrace) {
+          onError: expectAsync2((error, stackTrace) {
             expect(error, isNotNull);
-            expect(stackTrace, new isInstanceOf<StackTrace>());
+            expect(stackTrace, TypeMatcher<StackTrace>());
           })
       );
 
@@ -96,8 +96,8 @@ void executionTest () {
       var future2 = worker.handle(task2);
       var closeFuture = worker.close(afterDone: false);
 
-      expect(future1, throwsA(new isInstanceOf<TaskCancelledException>()));
-      expect(future2, throwsA(new isInstanceOf<TaskCancelledException>()));
+      expect(future1, throwsA(TypeMatcher<TaskCancelledException>()));
+      expect(future2, throwsA(TypeMatcher<TaskCancelledException>()));
       expect(closeFuture, completes);
     });
 

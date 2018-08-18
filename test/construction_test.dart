@@ -2,9 +2,9 @@ library worker.test.construction;
 
 import 'dart:io';
 import 'package:worker/worker.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
-void constructionTest () {
+void main () {
   final numberOfProcessors = Platform.numberOfProcessors;
 
   group('Worker construction:', () {
